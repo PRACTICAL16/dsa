@@ -1,0 +1,101 @@
+// You have a business with several offices; you want to lease phone lines to connect
+// them up with each other; and the phone company charges different amounts of money
+// to connect different pairs of cities. You want a set of lines that connects all your offic-
+// es with a minimum total cost. Solve the problem by suggesting appropriate data struc-
+// tures.
+
+#include <iostream>
+#include <climits>  // Required for INT_MAX
+using namespace std;
+
+class prims
+{
+private:
+    void prim()
+    {
+        int s, d, n, w, v;
+        cout << "ENTER THE NUMBER OF OFFICES : ";
+        cin >> v;
+        int arr[v][v];
+
+        for (int i = 0; i < v; i++)
+        {
+            for (int j = 0; j < v; j++)
+            {
+                arr[i][j] = 0;
+            }
+        }
+
+        for (int i = 0; i < v; i++)
+        {
+            cout << "ENTER THE SOURCE OFFICE : ";
+            cin >> s;
+            cout << "ENTER THE NUMBER OF ADJACENT OFFICES : ";
+            cin >> n;
+            for (int j = 0; j < n; j++)
+            {
+                cout << "ENTER THE ADJACENT OFFICE : ";
+                cin >> d;
+                cout << "ENTER THE COST OF PHONE LINE BETWEEN THESE OFFICES : ";
+                cin >> w;
+                arr[s][d] = w;
+                arr[d][s] = w; // Since it's an undirected graph
+            }
+        }
+
+        int wt = 0;
+        int count = 0;
+        bool visited[v];
+        for (int i = 0; i < v; i++)
+            visited[i] = false;
+
+        visited[0] = true;
+
+        while (count < v - 1)
+        {
+            int min = INT_MAX;
+            int x = -1, y = -1;
+
+            for (int i = 0; i < v; i++)
+            {
+                if (visited[i])
+                {
+                    for (int j = 0; j < v; j++)
+                    {
+                        if (!visited[j] && arr[i][j] != 0 && arr[i][j] < min)
+                        {
+                            min = arr[i][j];
+                            x = i;
+                            y = j;
+                        }
+                    }
+                }
+            }
+
+            if (x != -1 && y != -1)
+            {
+                cout << x << " TO " << y << " WITH COST " << arr[x][y] << endl;
+                wt += arr[x][y];
+                visited[y] = true;
+                count++;
+            }
+        }
+
+        cout << "\nTOTAL MINIMUM COST TO CONNECT OFFICES WITHOUT CYCLES: " << wt << endl;
+    }
+
+public:
+    void prims1()
+    {
+        prim();
+    }
+};
+
+int main()
+{
+    prims p;
+    p.prims1();
+    return 0;
+}
+
+// t.c = s.c = O(v²)
