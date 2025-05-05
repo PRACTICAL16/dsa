@@ -1,0 +1,165 @@
+// Consider telephone book database of N clients. Make use of a hash table implementa-
+// tion to quickly look up client‘s telephone number. Make use of two collision handling
+// techniques and compare them using number of comparisons required to find a set of
+// telephone numbers (Note: Use linear probing with replacement and without replace-
+// ment)
+
+#include <iostream>
+using namespace std;
+
+class hashing {
+    long long tele;
+    string name;
+
+public:
+    hashing(long long t, string n) {
+        tele = t;
+        name = n;
+    }
+    friend class hashtable;
+};
+
+class hashtable {
+    hashing* arr[26] = {nullptr};
+    hashing* arr1[26] = {nullptr};
+
+    void store(hashing* h) {
+        int index = h->name[0] - 'a';
+        for (int i = 0; i < 26; i++) {
+            int pos = (index + i) % 26;
+            if (!arr[pos]) {
+                arr[pos] = h;
+                return; 
+            }
+        }
+        cout << "HASH TABLE IS FULL, CANNOT INSERT\n";
+    }
+
+    void store1(hashing* h) {
+        int index = h->name[0] - 'a';
+        if (!arr1[index]) {
+            arr1[index] = h;
+            return;
+        }
+        int existingIndex = arr1[index]->name[0] - 'a';
+        if (existingIndex == index) {
+            for (int i = 1; i < 26; i++) {
+                int pos = (index + i) % 26;
+                if (!arr1[pos]) {
+                    arr1[pos] = h;
+                    return;
+                }
+            }
+        } else {
+            hashing* displaced = arr1[index];
+            arr1[index] = h;
+            for (int i = 1; i < 26; i++) {
+                int pos = (index + i) % 26;
+                if (!arr1[pos]) {
+                    arr1[pos] = displaced;
+                    return;
+                }
+            }
+        }
+        cout << "HASH TABLE IS FULL, CANNOT INSERT\n";
+    }
+
+    void show() {
+        for (int i = 0; i < 26; i++) {
+            if (arr[i]) {
+                cout << i << ") " << arr[i]->name << " -> " << arr[i]->tele << endl;
+            }
+        }
+    }
+
+    void show1() {
+        for (int i = 0; i < 26; i++) {
+            if (arr1[i]) {
+                cout << i << ") " << arr1[i]->name << " -> " << arr1[i]->tele << endl;
+            }
+        }
+    }
+
+    void find(string s) {
+        int index = s[0] - 'a';
+        for (int i = 0; i < 26; i++) {
+            int pos = (index + i) % 26;
+            if (!arr[pos]) break;
+            if (arr[pos]->name == s) {
+                cout << s << " -> " << arr[pos]->tele << endl;
+                return;
+            }
+        }
+        cout << "NAME NOT FOUND\n";
+    }
+
+    void find1(string s) {
+        int index = s[0] - 'a';
+        for (int i = 0; i < 26; i++) {
+            int pos = (index + i) % 26;
+            if (!arr1[pos]) break;
+            if (arr1[pos]->name == s) {
+                cout << s << " -> " << arr1[pos]->tele << endl;
+                return;
+            }
+        }
+        cout << "NAME NOT FOUND\n";
+    }
+
+public:
+    void s(hashing* h) { store(h); }
+    void d() { show(); }
+    void f(string s) { find(s); }
+    void s1(hashing* h) { store1(h); }
+    void d1() { show1(); }
+    void f1(string s) { find1(s); }
+};
+
+int main() {
+    hashtable ht, ht1;
+    long long p;
+    string name;
+    int t = 1, choice;
+
+    cout << "1. Linear Probing WITHOUT Replacement\n2. Linear Probing WITH Replacement\n";
+    cin >> choice;
+
+    if (choice == 1) {
+        while (t != 0) {
+            if (t == 1) {
+                cout << "Enter client name: ";
+                cin >> name;
+                cout << "Enter phone number: ";
+                cin >> p;
+                ht.s(new hashing(p, name));
+                ht.d();
+            } else if (t == 2) {
+                cout << "Enter name to search: ";
+                cin >> name;
+                ht.f(name);
+            }
+            cout << "1. Add Client\n2. Search Client\n0. Exit\n";
+            cin >> t;
+        }
+    } else {
+        while (t != 0) {
+            if (t == 1) {
+                cout << "Enter client name: ";
+                cin >> name;
+                cout << "Enter phone number: ";
+                cin >> p;
+                ht1.s1(new hashing(p, name));
+                ht1.d1();
+            } else if (t == 2) {
+                cout << "Enter name to search: ";
+                cin >> name;
+                ht1.f1(name);
+            }
+            cout << "1. Add Client\n2. Search Client\n0. Exit\n";
+            cin >> t;
+        }
+    }
+    return 0;
+}
+
+// t.c = O(n) for worst ,  s.c = O(1) 
