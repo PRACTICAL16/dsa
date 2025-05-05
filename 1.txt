@@ -1,176 +1,206 @@
+// Beginning with an empty binary tree, construct binary tree by inserting the values in
+// the order given. After constructing a binary tree perform following operations on it-
+// •Perform inorder, preorder and post order traversal
+// •Change a tree so that the roles of the left and right pointers are swapped at every
+// node
+// •Find the height of tree
+// •Copy this tree to another [operator=]
+// •Count number of leaves, number of internal nodes.
+// •Erase all nodes in a binary tree. (Implement both recursive and non-recursive meth-
+// ods)
+
 #include <iostream>
+#include <climits>
 #include <stack>
 using namespace std;
 
 class Node {
+public:
     int data;
-    Node *left, *right;
-
-    Node() {
-        data = 0;
-        left = right = nullptr;
-    }
+    Node* left;
+    Node* right;
 
     Node(int d) {
         data = d;
-        left = right = nullptr;
-    }
-
-    friend class BST;
-};
-
-class BST {
-    Node *root = nullptr;
-
-    int height(Node *node) {
-        if (node == nullptr)
-            return 0;
-
-        int l = height(node->left);
-        int r = height(node->right);
-
-        return max(l, r) + 1;
-    }
-
-    void swapAllNodes(Node *node) {
-        if (node == nullptr)
-            return;
-
-        Node *temp = node->left;
-        node->left = node->right;
-        node->right = temp;
-
-        swapAllNodes(node->left);
-        swapAllNodes(node->right);
-    }
-
-    void inorder(Node *node) {
-        if (node == nullptr)
-            return;
-        inorder(node->left);
-        cout << node->data << " ";
-        inorder(node->right);
-    }
-
-    Node* minValueNode(Node *node) {
-        Node *curr = node;
-        while (curr && curr->left != nullptr)
-            curr = curr->left;
-        return curr;
-    }
-
-public:
-    void insert(int d) {
-        Node *curr = root, *prev = nullptr;
-
-        if (curr == nullptr) {
-            root = new Node(d);
-            return;
-        }
-
-        while (curr != nullptr) {
-            prev = curr;
-            if (d > curr->data)
-                curr = curr->right;
-            else if (d < curr->data)
-                curr = curr->left;
-            else {
-                cout << "Node already exists." << endl;
-                return;
-            }
-        }
-
-        Node *temp = new Node(d);
-        if (d > prev->data)
-            prev->right = temp;
-        else
-            prev->left = temp;
-    }
-
-    void search(int d) {
-        Node *curr = root;
-        while (curr != nullptr) {
-            if (d > curr->data)
-                curr = curr->right;
-            else if (d < curr->data)
-                curr = curr->left;
-            else {
-                cout << "Node found." << endl;
-                return;
-            }
-        }
-        cout << "Node does not exist." << endl;
-    }
-
-    void getHeight() {
-        cout << "Number of nodes in the longest path from root: " << height(root) + 1 << endl;
-    }
-
-    void getMinValue() {
-        if (root == nullptr)
-            cout << "Tree is empty." << endl;
-        else
-            cout << "Minimum value in the tree: " << minValueNode(root)->data << endl;
-    }
-
-    void getAscending() {
-        cout << "Values in ascending order: ";
-        inorder(root);
-        cout << endl;
-    }
-
-    void printSwapped() {
-        swapAllNodes(root);
-        cout << "Tree swapped (left-right pointers at every node)." << endl;
+        left = NULL;
+        right = NULL;
     }
 };
+
+Node* createTree() {
+    int d;
+    cout << "Enter data (-1 if NULL): ";
+    cin >> d;
+    if (d == -1) return NULL;
+    Node* root = new Node(d);
+    cout << "Enter Left of " << d << ": ";
+    root->left = createTree();
+    cout << "Enter Right of " << d << ": ";
+    root->right = createTree();
+    return root;
+}
+
+void inorder(Node* root) {
+    if (root == NULL) return;
+    inorder(root->left);
+    cout << root->data << " ";
+    inorder(root->right);
+}
+
+void preorder(Node* root) {
+    if (root == NULL) return;
+    cout << root->data << " ";
+    preorder(root->left);
+    preorder(root->right);
+}
+
+void postorder(Node* root) {
+    if (root == NULL) return;
+    postorder(root->left);
+    postorder(root->right);
+    cout << root->data << " ";
+}
+
+void swapTree(Node* root) {
+    if (!root) return;
+    swap(root->left, root->right);
+    swapTree(root->left);
+    swapTree(root->right);
+}
+
+int height(Node* root) {
+    if (root == NULL) return 0;
+    return 1 + max(height(root->left), height(root->right));
+}
+
+void countLeaves(Node* root, int& ctr) {
+    if (!root) return;
+    if (root->left == NULL && root->right == NULL) ctr++;
+    countLeaves(root->left, ctr);
+    countLeaves(root->right, ctr);
+}
+
+void countInternal(Node* root, int& ctr) {
+    if (!root) return;
+    if (root->left || root->right) ctr++;
+    countInternal(root->left, ctr);
+    countInternal(root->right, ctr);
+}
+
+Node* copyTree(Node* root) {
+    if (!root) return NULL;
+    Node* newNode = new Node(root->data);
+    newNode->left = copyTree(root->left);
+    newNode->right = copyTree(root->right);
+    return newNode;
+}
+
+void eraseRecursive(Node*& root) {
+    if (!root) return;
+    eraseRecursive(root->left);
+    eraseRecursive(root->right);
+    delete root;
+    root = NULL;
+}
+
+void eraseNonRecursive(Node*& root) {
+    if (!root) return;
+    stack<Node*> st;
+    st.push(root);
+    while (!st.empty()) {
+        Node* curr = st.top();
+        st.pop();
+        if (curr->left) st.push(curr->left);
+        if (curr->right) st.push(curr->right);
+        delete curr;
+    }
+    root = NULL;
+}
 
 int main() {
-    BST tree;
-    int choice, value;
+    Node* root = NULL;
+    Node* copiedRoot = NULL;
+    int choice;
 
     while (true) {
-        cout << "\n----- MENU -----\n";
-        cout << "1. Insert new node\n";
-        cout << "2. Find number of nodes in longest path from root\n";
-        cout << "3. Find minimum data value in tree\n";
-        cout << "4. Swap left and right pointers at every node\n";
-        cout << "5. Search a value\n";
-        cout << "6. Display tree in ascending order\n";
-        cout << "0. Exit\n";
-        cout << "Enter your choice: ";
+        cout << "\nMenu" << endl;
+        cout << "1. Create Tree" << endl;
+        cout << "2. Inorder" << endl;
+        cout << "3. Preorder" << endl;
+        cout << "4. Postorder" << endl;
+        cout << "5. Swap Tree" << endl;
+        cout << "6. Height" << endl;
+        cout << "7. Copy Tree" << endl;
+        cout << "8. Count Leaves" << endl;
+        cout << "9. Count Internal Nodes" << endl;
+        cout << "10. Erase Recursively" << endl;
+        cout << "11. Erase Non-Recursively" << endl;
+        cout << "12. Exit" << endl;
+        cout << "Enter choice: ";
         cin >> choice;
 
         switch (choice) {
         case 1:
-            cout << "Enter value to insert: ";
-            cin >> value;
-            tree.insert(value);
+            root = createTree();
             break;
         case 2:
-            tree.getHeight();
+            cout << "Inorder: ";
+            inorder(root);
+            cout << endl;
             break;
         case 3:
-            tree.getMinValue();
+            cout << "Preorder: ";
+            preorder(root);
+            cout << endl;
             break;
         case 4:
-            tree.printSwapped();
+            cout << "Postorder: ";
+            postorder(root);
+            cout << endl;
             break;
         case 5:
-            cout << "Enter value to search: ";
-            cin >> value;
-            tree.search(value);
+            swapTree(root);
+            cout << "Tree swapped." << endl;
             break;
         case 6:
-            tree.getAscending();
+            cout << "Height: " << height(root) << endl;
             break;
-        case 0:
-            cout << "Exiting program." << endl;
+        case 7:
+            copiedRoot = copyTree(root);
+            cout << "Tree copied. Inorder of copied tree: ";
+            inorder(copiedRoot);
+            cout << endl;
+            break;
+        case 8:
+            {
+                int ctr = 0;
+                countLeaves(root, ctr);
+                cout << "Number of Leaves: " << ctr << endl;
+            }
+            break;
+        case 9:
+            {
+                int ctr = 0;
+                countInternal(root, ctr);
+                cout << "Number of Internal Nodes: " << ctr << endl;
+            }
+            break;
+        case 10:
+            eraseRecursive(root);
+            cout << "Tree erased recursively." << endl;
+            break;
+        case 11:
+            eraseNonRecursive(root);
+            cout << "Tree erased non-recursively." << endl;
+            break;
+        case 12:
+            cout << "Exiting..." << endl;
             return 0;
         default:
-            cout << "Invalid choice. Try again." << endl;
+            cout << "Invalid input!" << endl;
         }
     }
-
     return 0;
 }
+
+// t.c & s.c = O(n)
