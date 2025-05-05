@@ -1,0 +1,229 @@
+// Create an inordered threaded binary search tree. Perform inorder, preorder traversals
+// without recursion and deletion of a node. Analyze time and space complexity of the
+// algorithm
+
+#include <iostream>
+using namespace std;
+
+class node {
+public:
+    node *left, *right;
+    bool lbit, rbit;
+    int data;
+
+    node(int val = 0) {
+        left = right = nullptr;
+        lbit = rbit = 0;
+        data = val;
+    }
+};
+
+class tree {
+public:
+    node *head;
+    node *root;
+
+    tree() {
+        root = nullptr;
+        head = new node();
+        head->left = head;
+        head->right = head;
+    }
+
+    void insert(int val) {
+        node *newnode = new node(val);
+        if (!root) {
+            root = newnode;
+            root->left = head;
+            root->right = head;
+            head->left = root;
+            head->lbit = 1;
+            return;
+        }
+
+        node *temp = root;
+        while (true) {
+            if (val > temp->data) {
+                if (!temp->rbit) {
+                    temp->rbit = 1;
+                    newnode->left = temp;
+                    newnode->right = temp->right;
+                    temp->right = newnode;
+                    return;
+                }
+                temp = temp->right;
+            } else if (val < temp->data) {
+                if (!temp->lbit) {
+                    temp->lbit = 1;
+                    newnode->right = temp;
+                    newnode->left = temp->left;
+                    temp->left = newnode;
+                    return;
+                }
+                temp = temp->left;
+            } else {
+                cout << "Duplicate data!" << endl;
+                return;
+            }
+        }
+    }
+
+    void inorder() {
+        if (!root) {
+            cout << "Tree is empty!" << endl;
+            return;
+        }
+
+        node *temp = root;
+        while (temp->lbit == 1)
+            temp = temp->left;
+
+        while (temp != head) {
+            cout << temp->data << " ";
+            if (temp->rbit == 0)
+                temp = temp->right;
+            else {
+                temp = temp->right;
+                while (temp != head && temp->lbit == 1)
+                    temp = temp->left;
+            }
+        }
+        cout << endl;
+    }
+
+    void preorder() {
+        if (!root) {
+            cout << "Tree is empty!" << endl;
+            return;
+        }
+
+        node *temp = root;
+        while (temp != head) {
+            cout << temp->data << " ";
+            if (temp->lbit == 1)
+                temp = temp->left;
+            else {
+                while (temp != head && temp->rbit == 0)
+                    temp = temp->right;
+                temp = temp->right;
+            }
+        }
+        cout << endl;
+    }
+
+    void deleteNode(int key) {
+        node *parent = head;
+        node *temp = root;
+
+        while (temp != head && temp->data != key) {
+            parent = temp;
+            if (key < temp->data) {
+                if (temp->lbit == 1)
+                    temp = temp->left;
+                else
+                    return;
+            } else {
+                if (temp->rbit == 1)
+                    temp = temp->right;
+                else
+                    return;
+            }
+        }
+
+        if (temp == head) {
+            cout << "Node not found!" << endl;
+            return;
+        }
+
+        // Case 1: No children
+        if (temp->lbit == 0 && temp->rbit == 0) {
+            if (parent->left == temp) {
+                parent->left = temp->left;
+                parent->lbit = 0;
+            } else {
+                parent->right = temp->right;
+                parent->rbit = 0;
+            }
+            delete temp;
+        }
+        // Case 2: One child
+        else if (temp->lbit == 0 || temp->rbit == 0) {
+            node *child = (temp->lbit == 1) ? temp->left : temp->right;
+            if (parent->left == temp)
+                parent->left = child;
+            else
+                parent->right = child;
+
+            node *pred = temp->left;
+            while (pred->rbit == 1)
+                pred = pred->right;
+            pred->right = temp->right;
+
+            delete temp;
+        }
+        // Case 3: Two children
+        else {
+            node *succParent = temp;
+            node *succ = temp->right;
+            while (succ->lbit == 1) {
+                succParent = succ;
+                succ = succ->left;
+            }
+
+            temp->data = succ->data;
+
+            if (succParent->left == succ) {
+                succParent->left = succ->right;
+                succParent->lbit = succ->rbit;
+            } else {
+                succParent->right = succ->right;
+                succParent->rbit = succ->rbit;
+            }
+
+            delete succ;
+        }
+    }
+};
+
+int main() {
+    tree t;
+    int data, choice;
+    bool exit = false;
+
+    while (!exit) {
+        cout << "\n1. Insert\n2. Inorder\n3. Preorder\n4. Delete\n5. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Enter data: ";
+                cin >> data;
+                t.insert(data);
+                break;
+            case 2:
+                cout << "Inorder: ";
+                t.inorder();
+                break;
+            case 3:
+                cout << "Preorder: ";
+                t.preorder();
+                break;
+            case 4:
+                cout << "Enter data to delete: ";
+                cin >> data;
+                t.deleteNode(data);
+                break;
+            case 5:
+                exit = true;
+                cout << "Exiting..." << endl;
+                break;
+            default:
+                cout << "Invalid choice!" << endl;
+        }
+    }
+
+    return 0;
+}
+
+// t.c = O(n),  s.c = O(1)
