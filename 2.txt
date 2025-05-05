@@ -1,0 +1,140 @@
+// Construct the binary search tree by inserting the values in given order. After construct-
+// ing binary search tree perform following operations…... 1) Insert a new node 2) Find
+// numbers of node in longest path 3) Minimum and maximum data value found in tree
+// 4) Change a tree so that the roles of the left and right pointers are swapped at every
+// node 5) Search an element
+
+#include<iostream>
+using namespace std;
+
+class Node {
+public:
+    int data;
+    Node* left;
+    Node* right;
+
+    Node(int val) {
+        data = val;
+        left = NULL;
+        right = NULL;
+    }
+};
+
+class BST {
+public:
+    Node* root;
+    BST() {
+        root = NULL;
+    }
+
+    Node* insert(Node* node, int key) {
+        if (node == NULL) return new Node(key);    
+        if (node->data == key) return node; // val already exists in the tree
+        if (node->data < key) node->right = insert(node->right, key); // recurr in left subtree
+        else node->left = insert(node->left, key); // recurr in right subtree
+        return node;
+    }
+
+    int longestPathNodes(Node* node) { // Height + 1
+        if (!node) return 0;
+        return 1 + max(longestPathNodes(node->left), longestPathNodes(node->right));
+    }
+
+    void minimum(Node* node, int& mini) {
+        if (!node) return;
+        mini = min(mini, node->data);
+        minimum(node->left, mini);
+    }
+
+    void maximum(Node* node, int& maxi) {
+        if (!node) return;
+        maxi = max(maxi, node->data);
+        maximum(node->right, maxi);
+    }
+
+    void swapTree(Node* node) {
+        if (!node) return;
+        swap(node->left, node->right);
+        swapTree(node->left);
+        swapTree(node->right);
+    }
+
+    Node* search(Node* node, int val) {
+        if (!node || node->data == val) return node;
+        if (val < node->data) 
+            return search(node->left, val);
+        return search(node->right, val);
+    }
+
+    void inorder(Node* node) {
+        if (!node) return;
+        inorder(node->left);
+        cout << node->data << " ";
+        inorder(node->right);
+    }
+};
+
+int main() {
+    char ch;
+    BST bst;
+    while (true) {
+        cout << "\nBinary Search Tree Menu" << endl;
+        cout << "1. Insert" << endl;
+        cout << "2. Number of nodes in longest path" << endl;
+        cout << "3. Maximum Element" << endl;
+        cout << "4. Minimum Element" << endl;
+        cout << "5. Search Element" << endl;
+        cout << "6. Swap Tree" << endl;
+        cout << "7. Display Inorder" << endl;
+        cout << "8. Exit" << endl;
+        cout << "Enter valid input (1 - 8): ";
+        cin >> ch;
+
+        if (ch == '1') {
+            cout << "Enter element: ";
+            int val;
+            cin >> val;
+            bst.root = bst.insert(bst.root, val);
+        } 
+        else if (ch == '2') {
+            int longestPath = bst.longestPathNodes(bst.root);
+            cout << "Number of nodes in longest path: " << longestPath << endl;
+        } 
+        else if (ch == '3') {
+            int maxi = INT_MIN;
+            bst.maximum(bst.root, maxi);
+            cout << "Maximum Element: " << maxi << endl;
+        } 
+        else if (ch == '4') {
+            int mini = INT_MAX;
+            bst.minimum(bst.root, mini);
+            cout << "Minimum Element: " << mini << endl;
+        } 
+        else if (ch == '5') {
+            cout << "Enter searching element: ";
+            int val;
+            cin >> val;
+            Node* found = bst.search(bst.root, val);
+            if (found) cout << "Element " << val << " found in the tree." << endl;
+            else cout << "Element " << val << " not found in the tree." << endl;
+        } 
+        else if (ch == '6') {
+            bst.swapTree(bst.root);
+            cout << "Tree swapped successfully." << endl;
+        }
+        else if (ch == '7') {
+            cout << "Inorder Traversal: ";
+            bst.inorder(bst.root);
+            cout << endl;
+        }
+        else if (ch == '8') {
+            cout << "Exiting..." << endl;
+            break;
+        } else {
+            cout << "Invalid input!" << endl;
+        }
+    }
+    return 0;
+}
+
+// t.c & s.c = O(n)
