@@ -1,0 +1,161 @@
+// Department maintains a student information. The file contains roll number, name, di-
+// vision and address. Allow user to add, delete information of student. Display infor-
+// mation of particular employee. If record of student does not exist an appropriate mes-
+// sage is displayed. If it is, then the system displays the student details. Use sequential
+// file to maintain the data
+
+#include <iostream>
+#include <fstream>
+#include <cstring>
+using namespace std;
+
+class Student {
+public:
+    int roll, div;
+    char name[50], address[100];
+
+    void getData() {
+        cout << "Enter name: ";
+        cin.ignore(); // for leftover '\n'
+        cin.getline(name, 50);
+        cout << "Enter roll no: ";
+        cin >> roll;
+        cout << "Enter division: ";
+        cin >> div;
+        cout << "Enter address: ";
+        cin.ignore();
+        cin.getline(address, 100);
+    }
+
+    void display() {
+        cout << "Name: " << name << ", Roll No: " << roll
+             << ", Division: " << div << ", Address: " << address << endl;
+    }
+};
+
+class MyFile {
+    fstream file;
+    Student S;
+
+public:
+    MyFile(const char* filename) {
+        file.open(filename, ios::out | ios::binary | ios::app); 
+        if (!file) {
+            cout << "File creation error.\n";
+        } 
+        file.close();
+    }
+
+    void addRecord(const char* filename) {
+        file.open(filename, ios::app | ios::binary);
+        if (!file) {
+            cout << "Error opening file.\n";
+            return;
+        }
+        S.getData();
+        file.write(reinterpret_cast<char*>(&S), sizeof(S));
+        file.close();
+    }
+
+    void displayAll(const char* filename) {
+        file.open(filename, ios::in | ios::binary);
+        if (!file) {
+            cout << "Error reading file.\n";
+            return;
+        }
+        bool found = false;
+        while (file.read(reinterpret_cast<char*>(&S), sizeof(S))) {
+            S.display();
+            found = true;
+        }
+        if (!found) {
+            cout << "No records found.\n";
+        }
+        file.close();
+    }
+
+    void displayOne(const char* filename, int rollno) {
+        file.open(filename, ios::in | ios::binary);
+        if (!file) {
+            cout << "Error reading file.\n";
+            return;
+        }
+        bool found = false;
+        while (file.read(reinterpret_cast<char*>(&S), sizeof(S))) {
+            if (S.roll == rollno) {
+                cout << "Student found:\n";
+                S.display();
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            cout << "Student with roll no " << rollno << " not found.\n";
+        }
+        file.close();
+    }
+
+    void deleteRecord(const char* filename, int rollno) {
+        file.open(filename, ios::in | ios::binary);
+        fstream temp("tempfile.dat", ios::out | ios::binary);
+        bool found = false;
+
+        while (file.read(reinterpret_cast<char*>(&S), sizeof(S))) {
+            if (S.roll == rollno) {
+                cout << "Deleted Record: ";
+                S.display();
+                found = true;
+            } else {
+                temp.write(reinterpret_cast<char*>(&S), sizeof(S));
+            }
+        }
+
+        file.close();
+        temp.close();
+
+        remove(filename);               // Delete old file
+        rename("tempfile.dat", filename); // Rename temp
+
+        if (!found)
+            cout << "No such student found.\n";
+    }
+};
+
+int main() {
+    const char* filename = "students.dat"; 
+    MyFile f(filename);
+    int choice, roll;
+
+    do {
+        cout << "\n1: Add Record\n2: Display All\n3: Display by Roll No\n4: Delete Record\n0: Exit\nEnter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                f.addRecord(filename);
+                break;
+            case 2:
+                f.displayAll(filename);
+                break;
+            case 3:
+                cout << "Enter roll number to search: ";
+                cin >> roll;
+                f.displayOne(filename, roll);
+                break;
+            case 4:
+                cout << "Enter roll number to delete: ";
+                cin >> roll;
+                f.deleteRecord(filename, roll);
+                break;
+            case 0:
+                cout << "Exiting...\n";
+                break;
+            default:
+                cout << "Invalid choice.\n";
+        }
+    } while (choice != 0);
+
+    return 0;
+}
+
+//  t.c = O(n),  s.c = O(1)
