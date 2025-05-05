@@ -1,0 +1,421 @@
+// Beginning with an empty binary tree, construct binary tree by inserting the values in
+// the order given. After constructing a binary tree perform following operations on it-
+// •Perform inorder, preorder and post order traversal
+// •Change a tree so that the roles of the left and right pointers are swapped at every
+// node
+// •Find the height of tree
+// •Copy this tree to another [operator=]
+// •Count number of leaves, number of internal nodes.
+// •Erase all nodes in a binary tree. (Implement both recursive and non-recursive meth-
+// ods)
+#include<iostream>
+#include<queue>
+#include<stack>
+using namespace std;
+
+class treenode
+{
+private :
+    int data ;
+    treenode* right ;
+    treenode* left ;
+
+public :
+    friend class tree ;
+    treenode()
+    {
+        this -> data = 0 ;
+        this -> right = NULL ;
+        this -> left= NULL ;
+    }
+    treenode(int data)
+    {
+        this -> data = data ;
+        this -> right = NULL ;
+        this -> left = NULL ;
+    }
+};
+class tree
+{
+private :
+    treenode *root ;
+    treenode* maketree() ;
+public :
+    tree()
+    {
+        root = NULL ;
+    }
+    void create()
+    {
+        root = maketree() ;
+    }
+    void preorder(treenode* root)
+    {
+        if(root == NULL) return ;
+
+        cout<<root->data<<" " ;
+
+        preorder(root->left) ;
+        preorder(root->right) ;
+    }
+    //Recursive Pre-order , Post-order and in-order
+    void inorder(treenode* root)
+    {
+        if(root==NULL) return ;
+
+        inorder(root->left) ;
+        cout<<root->data<<" " ;
+        inorder(root->right) ;
+    }
+    void recursive_traversal(treenode* root)
+    {
+        cout<<"Enter 1 for postorder."<<endl;
+        cout<<"Enter 2 for preorder."<<endl;
+        cout<<"Enter 3 for inorder."<<endl;
+       
+        int choice ;
+        cin>>choice ;
+        if(choice==1)
+        {
+            cout<<"Post-order Traversal :" ;
+            postorder(root) ;
+        }
+        else if(choice==2)
+        {
+            cout<<"Pre-order Traversal :" ;
+            preorder(root) ;
+        }
+        else if(choice==3)
+        {
+            cout<<"In-order Traversal :" ;
+            inorder(root) ;
+        }
+        else{
+            cout<<"Try again!"<<endl;
+        }
+       
+    }
+    void postorder(treenode* root)
+    {
+        if(root==NULL) return ;
+        postorder(root->left) ;
+        postorder(root->right) ;
+        cout<<root->data<<" " ;
+    }
+   
+    void levelTraversal(treenode* root)
+    {
+        cout<<"Level order traversal of given tree :" ;
+        if(root==NULL) return ;
+        queue<treenode*> q ;
+        q.push(root) ;
+
+        while(!q.empty())
+        {
+            treenode* temp = q.front() ;
+            q.pop() ;
+            cout<<temp->data<<" " ;
+           
+
+            if(temp->left != NULL) q.push(temp->left) ;
+            if(temp->right !=NULL) q.push(temp->right) ;
+           
+           
+        }
+        cout<<endl;
+    }
+    //Count the height of the tree ;
+    treenode* copy(treenode* root)
+    {
+        if(root == NULL) return nullptr ;
+       
+        treenode* new_node = new treenode(root->data) ;
+        new_node->left = copy(root->left) ;
+        new_node->right = copy(root->right) ;
+       
+        return root ;
+    }
+    int height(treenode* root)
+    {
+        if(root==NULL) return 0 ;
+       
+        int h1 = height(root->left) ;
+        int h2 = height(root->right) ;
+       
+        return max(h1,h2)+1 ;
+       
+       
+    }
+
+    //Swap nodes ;
+    void invert(treenode* &root)
+    {
+        if(root == NULL) return ;
+       
+        invert(root->left) ;
+        invert(root->right) ;
+       
+        treenode* temp = root -> left ;
+        root->left = root -> right ;
+        root->right = temp ;
+    }
+   
+    void leaf_node_help(treenode* root, int &cnt1, int &cnt2) {
+    if (root == NULL) return;
+
+    leaf_node_help(root->left, cnt1, cnt2);
+    leaf_node_help(root->right, cnt1, cnt2);
+
+    if (root->left == NULL && root->right == NULL) {
+        cnt1++; // Counting leaf nodes
+    } else {
+        cnt2++; // Counting internal nodes
+    }
+}
+
+void leaf_node(treenode* root) {
+    if (root == NULL) {
+        cout << "The tree is empty." << endl;
+        return;
+    }
+
+    int cnt1 = 0, cnt2 = 0;
+    leaf_node_help(root, cnt1, cnt2);
+
+    cout << "The number of leaf nodes in the tree are: " << cnt1 << endl;
+    cout << "The number of internal nodes in the tree are: " << cnt2 << endl;
+}
+
+    void iterative_inorder(treenode* root)
+    {
+        stack<treenode*> st ;
+        treenode* temp = root;
+        while(1)
+        {
+           
+            while(temp != NULL)
+            {
+                st.push(temp) ;
+                temp = temp -> left ;
+            }
+            if(st.empty())
+            {
+                return ;
+            }
+            temp = st.top() ;
+            st.pop() ;
+            cout<<temp->data<<" " ;
+            temp = temp -> right ;
+           
+        }
+    }
+    void iterative_preorder(treenode* root)
+    {
+        stack<treenode*> st ;
+        treenode* temp = root ;
+       
+       
+        while(1)
+        {
+            while(temp != NULL)
+            {
+                cout << temp -> data ;
+                if(temp->right != NULL)
+                {
+                    st.push(temp->right) ;
+                }
+                temp = temp -> left ;
+            }
+            if(st.empty())
+            {
+                return  ;
+            }
+            temp = st.top() ;
+            st.pop() ;
+        }
+    }
+    void iterative_postorder(treenode* root)
+    {
+        stack<treenode*> st ;
+        treenode *dummy = new treenode(-1) ;
+        treenode* temp = root ;
+       
+        while(1)
+        {
+            while(temp !=NULL)
+            {
+                st.push(temp) ;
+                if(temp ->right != NULL)
+                {
+                    st.push(temp->right) ;
+                    st.push(dummy) ;
+                }
+                temp = temp -> left ;
+               
+            }
+            if(st.empty())
+            {
+                return ;
+            }
+            while(!st.empty())
+            {
+                treenode* top = st.top() ;
+                st.pop() ;
+                if(top != dummy)
+                {
+                    cout << top->data<<" " ;
+                }
+                else
+                {
+                    break ;
+                }
+               
+            }
+            if(!st.empty())
+            {
+                temp = st.top() ;
+                st.pop() ;
+            }
+        }
+    }
+    void deleteTree(treenode* root)
+    {
+        if(root == NULL) return ;
+       
+        deleteTree(root->left) ;
+        deleteTree(root->right) ;
+       
+       
+        delete root ;
+    }
+    void iterative_traversal()
+    {
+        cout<<"Enter 1 for postorder."<<endl;
+        cout<<"Enter 2 for preorder."<<endl;
+        cout<<"Enter 3 for inorder."<<endl;
+       
+        int choice ;
+        cin>>choice ;
+        if(choice==1)
+        {
+            cout<<"Post-order Traversal :" ;
+            iterative_postorder(root) ;
+        }
+        else if(choice==2)
+        {
+            cout<<"Pre-order Traversal :" ;
+            iterative_preorder(root) ;
+        }
+        else if(choice==3)
+        {
+            cout<<"In-order Traversal :" ;
+            iterative_inorder(root) ;
+        }
+        else{
+            cout<<"Try again!"<<endl;
+        }
+
+       
+    }
+    treenode* getRoot()
+    {
+        return this->root ;
+    }
+};
+
+treenode* tree::maketree()
+{
+    //base case : Make a root node
+    cout<<"Enter data :" ;
+    int data ;
+    cin>>data ;
+    treenode* temp = new treenode(data) ;
+
+   
+    cout<<"Have ("<< temp->data<< ")left child(Y/n) ?" ;
+    char ans ;
+    cin>>ans ;
+    if(ans=='Y' || ans=='y')
+    {
+        temp->left = maketree() ;
+    }
+   
+    //check for right-sub-tree
+    cout<<"Have ("<< temp->data<< ") right child(Y/n) ?" ;
+    cin>>ans ;
+    if(ans=='Y' || ans=='y')
+    {
+        temp->right = maketree() ;
+    }
+
+    return temp ;
+}
+
+int main()
+{
+    cout<<"Menu"<<endl;
+    tree t ;
+    int hi  ;
+    tree copyTree;
+    treenode* root2 ;
+    while(true)
+    {
+        treenode* root ;
+        cout << "\nMenu\n";
+        cout << "1. Create Tree\n";
+        cout << "2. Traverse Tree (Recursive)\n";
+        cout << "3. Traverse Tree (Iterative)\n";
+        cout << "4. Invert Tree\n";
+        cout << "5. Find Height\n";
+        cout << "6. Copy Tree\n";
+        cout << "7. Count leaf and internal nodes\n";
+        cout << "8. Delete Tree\n";
+        cout << "9. Exit\n";
+       
+        int choice;
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                t.create();
+                root = t.getRoot() ;
+                t.levelTraversal(root) ;
+                break;
+            case 2:
+                t.recursive_traversal(root);
+                break;
+            case 3:
+                t.iterative_traversal();
+                break;
+            case 4:
+                t.invert(root);
+                cout << "Tree inverted.\n";
+                t.levelTraversal(root) ;
+                break;
+            case 5:
+                hi = t.height(root) ;
+                cout << "Height: " <<hi << endl;
+                break;
+            case 6:
+                root2  = copyTree.copy(root);
+                cout << "Tree copied.\n";
+                copyTree.levelTraversal(root2) ;
+                break;
+           
+            case 7:
+                t.leaf_node(root) ;
+                break;
+            case 8:
+                t.deleteTree(root);
+                cout << "Tree deleted.\n";
+                break;
+            case 9:
+                return 0;
+            default:
+                cout << "Invalid choice. Try again.\n";
+        }
+    }
+   
+   
+    return 0 ;
+}
