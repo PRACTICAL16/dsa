@@ -1,0 +1,78 @@
+// Implement the Heap sort algorithm demonstrating heap data structure with modularity
+// of programming language
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Heap {
+    vector<int> heap;
+
+    // Function to maintain heap property after adding a new element     // t.c = O(n log n)
+    void heapify_up(int index) {
+        while (index > 0 && heap[index] > heap[(index - 1) / 2]) {
+            swap(heap[index], heap[(index - 1) / 2]);
+            index = (index - 1) / 2;
+        }
+    }
+
+    // Function to maintain heap property after removing the root
+    void heapify_down(int index, int size) {
+        int largest = index;
+        int left = 2 * index + 1;
+        int right = 2 * index + 2;
+
+        if (left < size && heap[left] > heap[largest])
+            largest = left;
+        if (right < size && heap[right] > heap[largest])
+            largest = right;
+
+        if (largest != index) {
+            swap(heap[index], heap[largest]);
+            heapify_down(largest, size);
+        }
+    }
+
+public:
+    void heapsort() {
+        int n;
+        cout << "Enter N: ";
+        cin >> n;
+        heap.resize(n);
+        cout << "Enter elements: ";
+        for (int i = 0; i < n; ++i) {
+            cin >> heap[i];
+        }
+
+        // Build max heap
+        for (int i = n / 2 - 1; i >= 0; --i) {
+            heapify_down(i, n);
+        }
+
+        cout << "MAX HEAP: ";
+        for (int i = 0; i < n; i++) {
+            cout << heap[i] << " ";
+        }
+        cout << endl;
+
+        // Heap sort
+        for (int i = n - 1; i > 0; --i) {
+            swap(heap[0], heap[i]);          // Move max to the end
+            heapify_down(0, i);              // Heapify reduced heap
+        }
+
+        cout << "SORTED ELEMENTS: ";
+        for (int i = 0; i < n; i++) {
+            cout << heap[i] << " ";
+        }
+        cout << endl;
+    }
+};
+
+int main() {
+    Heap h;
+    h.heapsort();
+    return 0;
+}
+
+// t.c = O(n log n)	, s.c = O(n)
