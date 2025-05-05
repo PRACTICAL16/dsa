@@ -1,0 +1,117 @@
+// Given sequence k = k1 <k2 < … <kn of n sorted keys, with a successful and unsuc-
+// cessful search probability pi and qi for each key ki. Build the Binary search tree that
+// has the least search cost given the access probability for each key.
+
+#include <iostream>
+using namespace std;
+
+class Node {
+private:
+    int key;
+    Node* left;
+    Node* right;
+public:
+    Node(int k) {
+        key = k;
+        left = right = NULL;
+    }
+    friend class obst;
+};
+
+class obst {
+private:
+    float w[5][5], c[5][5];
+    int r[5][5];
+
+    Node* create(int i, int j, int keys[]) {
+        if (i == j) {
+            return NULL;
+        }
+        int k = r[i][j];
+        Node* t = new Node(keys[k-1]);
+        t->left = create(i, k-1, keys);
+        t->right = create(k, j, keys);
+        return t;
+    }
+
+    void inorder(Node* root) {
+        if (!root) {
+            return;
+        }
+        inorder(root->left);
+        cout << root->key << " ";
+        inorder(root->right);
+    }
+
+    void OBST(float p[], float q[], int n, int keys[]) {
+        for (int i = 0; i <= n; i++) {
+            w[i][i] = q[i];
+            c[i][i] = 0;
+            r[i][i] = 0;
+
+            if (i < n) {
+                w[i][i+1] = q[i] + q[i+1] + p[i+1];
+                c[i][i+1] = w[i][i+1];
+                r[i][i+1] = i + 1;
+            }
+        }
+
+        for (int m = 2; m <= n; m++) {
+            for (int i = 0; i <= n - m; i++) {
+                int j = i + m;
+                w[i][j] = w[i][j-1] + p[j] + q[j];
+                float min = 9999;
+                int k = 0;
+                for (int i1 = i + 1; i1 < j; i1++) {
+                    float sum = c[i][i1 - 1] + c[i1][j];
+                    if (sum < min) {
+                        min = sum;
+                        k = i1;
+                    }
+                }
+                c[i][j] = w[i][j] + c[i][k - 1] + c[k][j];
+                r[i][j] = k;
+            }
+        }
+
+        Node* root = create(0, n, keys);
+        cout << "\nInorder Traversal of Optimal BST: ";
+        inorder(root);
+        cout << "\nTotal Weight (Cost) of OBST: " << c[0][n] << endl;
+    }
+
+public:
+    void OBST1(float p[], float q[], int n, int keys[]) {
+        OBST(p, q, n, keys);
+    }
+};
+
+int main() {
+    obst o;
+    int n;
+    cout << "Enter number of keys: ";
+    cin >> n;
+
+    int keys[n];
+    float p[n+1], q[n+1];
+
+    cout << "Enter keys in sorted order: ";
+    for (int i = 0; i < n; i++) {
+        cin >> keys[i];
+    }
+
+    cout << "Enter success probabilities (p[1] to p[" << n << "]): ";
+    for (int i = 1; i <= n; i++) {
+        cin >> p[i];
+    }
+
+    cout << "Enter failure probabilities (q[0] to q[" << n << "]): ";
+    for (int i = 0; i <= n; i++) {
+        cin >> q[i];
+    }
+
+    o.OBST1(p, q, n, keys);
+    return 0;
+}
+
+// t.c = O(n³) , s.c = O(n²)
